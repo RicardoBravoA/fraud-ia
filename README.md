@@ -283,6 +283,7 @@ flowchart LR
 | [backend/README.md](backend/README.md) | API, agentes, scripts |
 | [web/README.md](web/README.md) | Detalle de páginas UI |
 | [CHECKLIST.md](CHECKLIST.md) | PDF vs implementado |
+| [docs/ENTREVISTA.md](docs/ENTREVISTA.md) | Preguntas y respuestas para la entrevista (basado en el PDF) |
 | [examples/evaluations/README.md](examples/evaluations/README.md) | Exportar informes JSON |
 
 ---
