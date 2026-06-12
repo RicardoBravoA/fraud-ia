@@ -1,0 +1,58 @@
+---
+description: CI/CD, secretos, observabilidad y checklist DevOps Azure
+globs: .github/**,**/Dockerfile,**/docker-compose*.yml,infra/**
+alwaysApply: false
+---
+
+# Azure DevOps — CI/CD
+
+Arquitectura de servicios: ver `azure-architecture.mdc`.
+
+## Pipeline CI (`ci.yml`)
+
+| Job | Comando | Bloquea merge |
+|-----|---------|---------------|
+| `lint-backend` | ruff + mypy | ✅ |
+| `test-backend` | pytest --cov-fail-under=80 | ✅ |
+| `lint-web` | eslint | ✅ |
+| `test-web` | vitest --coverage ≥70% | ✅ |
+| `test-infra` | bicep build/lint | ✅ |
+| `test-docker` | compose config + docker build | ✅ |
+| `build-web` | npm run build | ✅ |
+
+Orden: lint → tests → build. Deploy solo si CI verde.
+
+## Deploy workflows
+
+| Workflow | Trigger |
+|----------|---------|
+| `deploy-backend.yml` | push main |
+| `deploy-web.yml` | push main |
+| `infra.yml` | manual |
+
+Post-deploy smoke: ver `infra-testing.mdc`.
+
+## Secretos
+
+- Local: `.env` (gitignored)
+- Azure: **Key Vault** + managed identity en Container Apps
+- `.env.example` solo nombres, sin valores
+
+## Observabilidad
+
+- `GET /health` obligatorio (Container Apps probe)
+- Logs JSON con `transaction_id` → Application Insights
+
+## Web search gobernada
+
+Lista blanca dominios, timeout 5s, fallback graceful, registrar en audit trail.
+
+## Checklist entrega
+
+- [ ] IaC Bicep despliega todos los recursos
+- [ ] CI: tests backend + web + infra + docker
+- [ ] README: URL demo + `./scripts/run-all-tests.sh`
+
+## Static Web Apps
+
+`VITE_API_URL` en build apuntando al FQDN del Container App.

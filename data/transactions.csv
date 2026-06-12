@@ -1,0 +1,6 @@
+transaction_id,customer_id,amount,currency,country,channel,device_id,timestamp,merchant_id
+T-1001,CU-001,1800.00,PEN,PE,web,D-01,2025-12-17T03:15:00,M-001
+T-1002,CU-002,9500.00,PEN,PE,mobile,D-02,2025-12-17T23:45:00,M-002
+T-1003,CU-001,450.00,PEN,PE,web,D-01,2025-12-17T10:00:00,M-001
+T-1004,CU-002,50000.00,PEN,PE,mobile,D-02,2025-12-17T23:50:00,M-003
+T-1005,CU-003,2000.00,USD,US,web,D-99,2025-12-17T14:00:00,M-004

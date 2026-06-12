@@ -1,0 +1,17 @@
+[
+  {
+    "customer_id": "CU-001",
+    "name": "María López",
+    "segment": "Retail banking"
+  },
+  {
+    "customer_id": "CU-002",
+    "name": "Carlos Ruiz",
+    "segment": "Premium"
+  },
+  {
+    "customer_id": "CU-003",
+    "name": "Ana Torres",
+    "segment": "Standard"
+  }
+]

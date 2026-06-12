@@ -1,0 +1,42 @@
+---
+description: Formato JSON de respuesta por evaluación y audit trail
+globs: backend/**/*.py,web/**/types/**,**/schemas/**
+alwaysApply: false
+---
+
+# Formato de Respuesta
+
+Toda evaluación debe retornar este schema (Pydantic en backend):
+
+```json
+{
+  "decision": "CHALLENGE",
+  "confidence": 0.65,
+  "signals": ["Monto fuera de rango", "Horario no habitual", "Alerta externa"],
+  "citations_internal": [
+    { "policy_id": "FP-01", "chunk_id": "1", "version": "2025.1" }
+  ],
+  "citations_external": [
+    {
+      "url": "https://example.com/alert",
+      "summary": "Alerta de fraude reciente en el merchant"
+    }
+  ],
+  "explanation_customer": "La transacción requiere validación adicional...",
+  "explanation_audit": "Se aplicó FP-01. Ruta: Context → RAG → Web → Debate → Decisión."
+}
+```
+
+## Audit trail (persistir además del JSON)
+
+- `transaction_id`, `timestamp`, `agent_trace[]`, `decision`, `confidence`
+- Evidencias RAG: `policy_id`, `chunk_id`, `similarity_score`
+- Evidencias web: `url`, `query`, `summary`, `retrieved_at`
+- Eventos HITL: `case_id`, `status`, `reviewer_action`, `resolved_at`
+
+## Validación
+
+- `decision` ∈ {APPROVE, CHALLENGE, BLOCK, ESCALATE_TO_HUMAN}
+- `confidence` ∈ [0.0, 1.0] — **fraud risk score** (higher = more risky; 1.0 = maximum risk)
+- `explanation_customer`: lenguaje claro, sin jerga interna
+- `explanation_audit`: cita políticas, agentes y fuentes

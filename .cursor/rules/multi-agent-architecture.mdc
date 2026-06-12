@@ -1,0 +1,67 @@
+---
+description: Arquitectura y roles del sistema multi-agente de fraude
+globs: backend/**/*.py,**/agents/**,**/orchestrator/**
+alwaysApply: false
+---
+
+# Arquitectura Multi-Agente
+
+## Agentes requeridos
+
+| Agente | Responsabilidad |
+|--------|-----------------|
+| Transaction Context Agent | Señales internas: monto, horario, país, dispositivo, canal |
+| Behavioral Pattern Agent | Comparar vs historial del cliente |
+| Internal Policy RAG Agent | Recuperar políticas desde base vectorial |
+| External Threat Intel Agent | Búsqueda web gobernada sobre amenazas |
+| Evidence Aggregation Agent | Consolidar señales y evidencias |
+| Debate Agents | Pro-Fraud vs Pro-Customer |
+| Decision Arbiter Agent | Final decision + **risk score** (`confidence` field) |
+| Explainability Agent | Explicaciones cliente y auditoría |
+
+## Flujo de orquestación
+
+```
+Transacción → Context → Behavioral → RAG → Web Intel → Aggregation
+  → Debate (Pro-Fraud / Pro-Customer) → Arbiter → Explainability
+  → [HITL si ESCALATE o confianza baja]
+```
+
+## Handoffs y estado
+
+- Usar LangGraph o orquestador equivalente en backend Python
+- Persistir estado por `transaction_id` para audit trail
+- Cada agente emite: `agent_name`, `findings`, `confidence_delta`, `timestamp`
+- Agentes pequeños, intercambiables — ver `engineering-standards.mdc`
+
+## Reglas de decisión (referencia)
+
+- FP-01: Monto > 3× promedio habitual Y horario fuera de rango → CHALLENGE
+- FP-02: Transacción internacional Y dispositivo nuevo → ESCALATE_TO_HUMAN
+- FP-03: Monto > 10× promedio habitual → BLOCK
+- FP-04: Merchant alto riesgo (`data/high_risk_merchants.json`) + monto elevado → BLOCK
+- Combinar señales internas + RAG + web + debate antes de decidir
+
+## Transacciones demo (4 decisiones)
+
+| ID | Decisión esperada | Política / razón |
+|----|-------------------|------------------|
+| T-1003 | APPROVE | Monto y horario habituales |
+| T-1001 | CHALLENGE | FP-01 |
+| T-1004 | BLOCK | FP-03 + FP-04 (M-003 alto riesgo) |
+| T-1005 | ESCALATE_TO_HUMAN | FP-02 (US + D-99) |
+
+## Patrón de implementación
+
+```python
+class FraudAnalysisState(TypedDict):
+    transaction: dict
+    customer_profile: dict
+    signals: list[str]
+    internal_citations: list[dict]
+    external_citations: list[dict]
+    agent_trace: list[dict]
+    debate: dict | None
+    decision: str | None
+    confidence: float
+```

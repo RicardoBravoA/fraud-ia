@@ -1,0 +1,32 @@
+---
+description: Estrategia de tests obligatoria — índice global (detalle en rules por capa)
+alwaysApply: true
+---
+
+# Testing — Índice global
+
+**Regla:** ningún módulo se mergea sin tests. CI bloquea PR si falla cualquier capa.
+
+## Matriz resumida
+
+| Capa | Rule detalle | Tool | Cov |
+|------|--------------|------|-----|
+| Backend Python | `python-testing.mdc` | pytest | ≥80% |
+| Frontend React | `web-testing.mdc` | Vitest | ≥70% |
+| Infra + Docker | `infra-testing.mdc` | bicep + docker | 100% files |
+| CI pipeline | `azure-cicd.mdc` | GitHub Actions | — |
+
+## Comando local
+
+```bash
+./scripts/run-all-tests.sh
+```
+
+## Al agregar código
+
+| Si tocas… | Agrega test en… |
+|-----------|-----------------|
+| `backend/app/` | `backend/tests/unit/` o `integration/` |
+| `backend/scripts/` | `backend/tests/scripts/` |
+| `web/src/` | `__tests__/` junto al módulo |
+| `infra/` | `infra/tests/validate-modules.sh` |

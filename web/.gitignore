@@ -1,0 +1,10 @@
+# Covered by root .gitignore — kept for developers working only in web/
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.local
+*.tsbuildinfo
+.vite

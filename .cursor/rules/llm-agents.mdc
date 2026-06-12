@@ -1,0 +1,43 @@
+---
+description: Qué agentes usan LLM vs lógica determinística y mocks para dev
+globs: backend/**/agents/**,backend/**/orchestrator/**,backend/**/infrastructure/llm/**
+alwaysApply: false
+---
+
+# LLM y Agentes — IA Generativa
+
+PDF exige: informe explicativo en lenguaje natural + orquestación multi-agente.
+
+## LLM obligatorio (Azure OpenAI)
+
+| Agente | Uso LLM |
+|--------|---------|
+| Internal Policy RAG Agent | Interpretar política recuperada + contexto |
+| External Threat Intel Agent | Resumir resultados web search |
+| Debate Agents | Pro-Fraud vs Pro-Customer (2 llamadas) |
+| Explainability Agent | `explanation_customer` + `explanation_audit` |
+
+## Determinístico (sin LLM)
+
+| Agente / módulo | Lógica |
+|-----------------|--------|
+| Transaction Context Agent | Señales: monto, horario, país, dispositivo |
+| Behavioral Pattern Agent | Comparar vs `customer_behavior` |
+| Evidence Aggregation Agent | Consolidar arrays — código puro |
+| Decision Arbiter Agent | Reglas + score ponderado (LLM solo si empate) |
+| `domain/signals.py` | `compute_signals()` |
+
+## Framework
+
+**LangGraph** — grafo de estado con nodos por agente. Ver `multi-agent-architecture.mdc`.
+
+## Modo desarrollo sin API key
+
+- `WEB_SEARCH_MOCK=true` — respuestas web fijas
+- Mock LLM en tests — respuestas JSON fixture
+- Optional: flag `LLM_MOCK=true` para dev local sin Azure OpenAI
+
+## Coste / latencia
+
+- Pipeline síncrono por request (PDF: "tiempo real" = evaluar al recibir transacción)
+- Timeout LLM: 30s por llamada; fallback a decisión basada en reglas + ESCALATE si falla

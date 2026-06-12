@@ -1,0 +1,38 @@
+---
+description: Tests infraestructura Bicep, Docker y smoke post-deploy
+globs: infra/**,.github/**,**/Dockerfile,docker-compose*.yml
+alwaysApply: false
+---
+
+# Testing Infra & DevOps
+
+Pipeline CI: ver `azure-cicd.mdc`. Aquí solo **cómo** testear infra.
+
+## Bicep
+
+```bash
+./infra/tests/validate-modules.sh
+# o: az bicep build --file infra/main.bicep && az bicep lint --file infra/main.bicep
+```
+
+## Docker
+
+```bash
+docker compose config
+docker build -f backend/Dockerfile backend/
+```
+
+Opcional: `hadolint backend/Dockerfile`.
+
+## Smoke post-deploy
+
+```bash
+curl -f https://<api>/health
+curl -f -X POST https://<api>/api/transactions/T-1003/evaluate
+```
+
+Código: `backend/tests/smoke/test_deployed_api.py` (skip si no hay `SMOKE_TEST_URL`).
+
+## Secretos en tests
+
+Nunca keys reales. Smoke usa `SMOKE_TEST_URL` de GitHub Secrets solo en deploy pipeline.

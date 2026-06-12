@@ -1,0 +1,61 @@
+---
+description: Pruebas unitarias frontend React — Vitest, Testing Library, MSW
+globs: web/**/*.{tsx,ts,test.tsx,test.ts,spec.tsx,spec.ts}
+alwaysApply: false
+---
+
+# Testing Web (React)
+
+## Alcance completo
+
+Tests obligatorios para **todo** el frontend:
+
+| Módulo | Tipo test |
+|--------|-----------|
+| `src/components/` | unit — render + interacción |
+| `src/pages/` | unit — loading/error/empty/success |
+| `src/api/` | unit — client HTTP, parsers |
+| `src/hooks/` | unit — `@testing-library/react` |
+| `src/lib/` | unit — formatters, helpers |
+| `src/types/` | compile-time TS (build en CI) |
+
+## Stack
+
+- Vitest + @testing-library/react + user-event
+- MSW — mock API backend
+- @vitest/coverage-v8 — **≥70%** global en `src/`
+
+## Estructura
+
+```
+web/src/
+├── components/__tests__/
+├── pages/__tests__/
+├── api/__tests__/
+├── hooks/__tests__/
+├── lib/__tests__/
+└── test/
+    ├── setup.ts
+    └── mocks/handlers.ts
+```
+
+## Reglas
+
+1. All UI copy under test must be **English** (match production strings)
+2. Todo componente con lógica → `*.test.tsx`
+2. Todo page → 4 estados UI
+3. Todo hook custom → test aislado
+4. API client → test con MSW, sin fetch real
+5. CI bloquea si cov < 70%
+
+## Comandos
+
+```bash
+cd web
+npm run test:coverage
+npm run lint && npm run build
+```
+
+## E2E (opcional, no reemplaza unit)
+
+Playwright en `web/e2e/` si hay tiempo.

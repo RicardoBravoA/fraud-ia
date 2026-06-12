@@ -1,0 +1,75 @@
+---
+description: Backend Python — Clean/Hexagonal Architecture, FastAPI, capas y flujo
+globs: backend/**/*.py,**/agents/**/*.py,**/orchestrator/**
+alwaysApply: false
+---
+
+# Python Backend — Clean Architecture (Hexagonal)
+
+Patrón obligatorio. Principios globales: `engineering-standards.mdc`.
+
+## Capas (dependencias solo hacia adentro)
+
+```
+API (routes)  →  Application (services, orchestrator)  →  Domain
+                              ↓
+                    Infrastructure (repos, LLM, RAG, web)
+```
+
+| Capa | Carpeta | Responsabilidad |
+|------|---------|-----------------|
+| **API** | `api/routes/` | HTTP, validación input, status codes — **sin lógica de negocio** |
+| **Application** | `services/`, `orchestrator/` | Casos de uso, pipeline LangGraph |
+| **Domain** | `domain/` | Entidades, enums, `compute_signals()` — **sin I/O** |
+| **Infrastructure** | `repositories/`, `infrastructure/` | MongoDB, Azure OpenAI, RAG, web search |
+| **Core** | `core/` | config, deps, exceptions, logging |
+
+## Estructura
+
+```
+backend/app/
+├── api/routes/           # transactions, evaluations, hitl, audit, health
+├── services/             # FraudService, HitlService
+├── domain/
+│   ├── models.py         # Transaction, Decision, EvaluationResult
+│   └── signals.py        # compute_signals() — lógica pura
+├── agents/               # BaseAgent + 8 agentes (SRP cada uno)
+├── orchestrator/         # LangGraph — ensambla agentes, no lógica de dominio
+├── repositories/         # MongoDB (interfaces + implementación)
+├── infrastructure/
+│   ├── llm/              # Azure OpenAI client
+│   ├── rag/              # Chroma / AI Search
+│   └── web_search/       # Tavily / mock
+├── models/               # Pydantic schemas API (DTOs)
+└── core/                 # config, deps, exceptions
+```
+
+## Reglas por capa
+
+- **Routes**: delegar a `service`; nunca llamar LLM, MongoDB ni agentes directo
+- **Services**: orquestar repos + `orchestrator.run()`; transacciones de negocio
+- **Domain**: funciones puras testeables; sin imports de FastAPI/Motor/LangChain
+- **Agents**: `async run(state) → state`; interfaz común `BaseAgent`
+- **Repositories**: CRUD por colección; sin lógica de fraude
+- **Infrastructure**: adapters intercambiables (mock en tests)
+- **Comments**: English only (`#`, docstrings) — `engineering-standards.mdc`
+
+## Flujo evaluate
+
+```
+POST /api/transactions/{id}/evaluate
+  → route valida tx_id
+  → FraudService.evaluate(tx_id)
+      → repository carga tx + behavior
+      → orchestrator.run(state)
+      → persiste evaluation + audit_events
+  → EvaluationResult (Pydantic)
+```
+
+## Stack
+
+FastAPI, LangGraph, Motor/Beanie, Chroma/AI Search — ver `mongodb.mdc`, `multi-agent-architecture.mdc`.
+
+## Tests
+
+`python-testing.mdc` — domain y services sin I/O; infra mockeada.

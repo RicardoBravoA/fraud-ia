@@ -1,0 +1,54 @@
+---
+description: Human-in-the-loop — cola de casos, escalación y resolución
+globs: backend/**/hitl/**,backend/**/services/*hitl*,backend/**/api/routes/*hitl*
+alwaysApply: false
+---
+
+# HITL — Human-in-the-loop
+
+Requisito PDF: cola de casos + audit trail cuando la decisión lo requiera.
+
+## Cuándo escalar a HITL
+
+| Condición | Acción |
+|-----------|--------|
+| `decision == ESCALATE_TO_HUMAN` | Crear caso en cola automáticamente |
+| `confidence >= HITL_CONFIDENCE_THRESHOLD` (default 0.5) | Queue for human review when risk is elevated |
+| Señales contradictorias post-debate | Escalar (Pro-Fraud vs Pro-Customer empate) |
+| FP-02 aplicada | ESCALATE_TO_HUMAN directo |
+
+## Estados de cola (`hitl_cases`)
+
+```
+PENDING → IN_REVIEW → APPROVED | REJECTED | ESCALATED
+```
+
+| Status | Descripción |
+|--------|-------------|
+| `PENDING` | Esperando revisor |
+| `IN_REVIEW` | Revisor tomó el caso |
+| `APPROVED` | Humano aprueba transacción |
+| `REJECTED` | Humano confirma fraude/bloqueo |
+| `ESCALATED` | Requiere nivel superior (opcional) |
+
+## API
+
+```
+GET  /api/hitl/queue              # casos PENDING + IN_REVIEW
+POST /api/hitl/{case_id}/resolve  # body: { action, reviewer_note? }
+GET  /api/hitl/{case_id}          # detalle caso
+```
+
+## Persistencia MongoDB
+
+Colección `hitl_cases`: `case_id`, `transaction_id`, `evaluation_id`, `status`, `decision_original`, `confidence`, `reviewer_action`, `reviewer_note`, `created_at`, `resolved_at`.
+
+Registrar evento en `audit_events` en cada transición de estado.
+
+## Frontend
+
+Página `/hitl` — listar cola, ver evaluación completa, botones aprobar/rechazar/escalar.
+
+## Demo
+
+T-1005 → ESCALATE_TO_HUMAN (FP-02: país US + dispositivo D-99).

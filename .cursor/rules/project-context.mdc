@@ -1,0 +1,45 @@
+---
+description: Contexto del reto BCP - sistema multi-agente de detección de fraude
+alwaysApply: true
+---
+
+# Reto Técnico BCP – IA Engineer
+
+## Objetivo
+
+Web App (Backend + Frontend) con sistema multi-agente para detectar fraude en transacciones con señales ambiguas.
+
+## Stack elegido
+
+- **Backend**: Python + FastAPI + LangGraph (ver `python-backend.mdc`)
+- **Base de datos**: **MongoDB** local / **Cosmos DB MongoDB API** en Azure (ver `mongodb.mdc`)
+- **RAG**: Chroma (local) / Azure AI Search (prod) — vectores no van en MongoDB
+- **Frontend web**: React + Vite — `web/` (ver `web-frontend.mdc`)
+- **Mobile**: ⏸ en espera
+- **Cloud**: Azure — Container Apps + SWA + Key Vault (ver `azure-architecture.mdc`)
+- **Tests**: **todas las tecnologías** — ver `testing-strategy.mdc`
+- **Calidad de código**: arquitectura limpia, SOLID, escalable — ver `engineering-standards.mdc`
+
+## Qué va en servidor vs cliente
+
+| Servidor (Python) | Cliente (React) |
+|-------------------|-----------------|
+| Agentes + LLM + orquestación | Dashboard, tablas, formularios |
+| RAG + web search | Visualizar evaluaciones y audit trail |
+| MongoDB: audit, HITL, evaluaciones | Cola HITL vía API |
+| API REST | Sin secretos ni lógica de agentes |
+
+## Decisiones obligatorias
+
+Cada evaluación: `APPROVE`, `CHALLENGE`, `BLOCK`, `ESCALATE_TO_HUMAN`.
+
+## Entregables
+
+- Repo GitHub + README (local + demo Azure)
+- ≥4 informes IA (una por decisión)
+- Audit trail demostrable
+- Tests unitarios pasando en CI
+
+## Datos sintéticos
+
+`data/transactions.csv`, `data/customer_behavior.csv`, `data/fraud_policies.json`

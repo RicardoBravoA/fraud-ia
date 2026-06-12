@@ -1,0 +1,78 @@
+---
+description: MongoDB para persistencia — colecciones, ODM y local vs Azure Cosmos DB
+globs: backend/**/db/**,backend/**/models/**,backend/**/repositories/**,infra/**/cosmos*.bicep
+alwaysApply: false
+---
+
+# MongoDB — Base de datos
+
+## ¿Qué dice el reto?
+
+El PDF **no exige** una BD relacional. Solo pide persistencia de audit trail, cola HITL y trazabilidad. **MongoDB es válido** y encaja bien con documentos anidados (`agent_trace`, `citations`).
+
+## División de responsabilidades
+
+| Almacén | Uso |
+|---------|-----|
+| **MongoDB** | Transacciones, evaluaciones, audit trail, cola HITL |
+| **Azure AI Search** | RAG vectorial de políticas (no reemplazar con Mongo) |
+| **Chroma** (local) | RAG en desarrollo sin AI Search |
+
+## Stack
+
+- **Driver**: Motor (async) + Beanie ODM (opcional) o PyMongo async
+- **Local**: MongoDB 7 via Docker (`docker compose up mongo`)
+- **Azure**: **Cosmos DB for MongoDB** (API compatible, servicio gestionado)
+
+## Colecciones
+
+```
+transactions          # datos CSV + metadata
+customer_behaviors    # perfil por customer_id
+evaluations           # EvaluationResult completo por transaction_id
+audit_events          # evento por agente (append-only)
+hitl_cases            # cola HITL con status
+```
+
+## Schemas (documentos)
+
+```python
+# evaluations — índice único en transaction_id
+{
+  "transaction_id": "T-1001",
+  "decision": "CHALLENGE",
+  "confidence": 0.65,
+  "signals": [...],
+  "citations_internal": [...],
+  "citations_external": [...],
+  "explanation_customer": "...",
+  "explanation_audit": "...",
+  "agent_trace": [{ "agent_name": "...", "findings": {}, "timestamp": "..." }],
+  "created_at": ISODate
+}
+
+# audit_events — índice en (transaction_id, timestamp)
+# hitl_cases — índice en status + created_at
+```
+
+## Convenciones
+
+- `_id` ObjectId interno; IDs de negocio (`transaction_id`) como campo indexado único
+- Timestamps UTC (`created_at`, `updated_at`)
+- Repositorio por colección en `backend/app/repositories/`
+- No mezclar lógica de agentes en capa DB
+- Patrones escalables — ver `engineering-standards.mdc`
+
+## Conexión
+
+```python
+# Local
+MONGODB_URI=mongodb://localhost:27017/fraud_detection
+
+# Azure Cosmos DB for MongoDB
+MONGODB_URI=mongodb://<account>.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb
+```
+
+## Seed
+
+`scripts/seed_data.py` hace upsert de CSVs a `transactions` y `customer_behaviors`.

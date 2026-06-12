@@ -1,0 +1,58 @@
+---
+description: Arquitectura Azure recomendada para el reto — servicios, IaC y topología
+globs: infra/**,**/*.bicep,**/*.tf,**/Dockerfile
+alwaysApply: false
+---
+
+# Azure — Arquitectura objetivo
+
+## Servicios
+
+| Capa | Servicio Azure | Propósito |
+|------|----------------|-----------|
+| API | **Container Apps** | FastAPI + agentes + LangGraph |
+| Web | **Static Web Apps** | React (Vite build) |
+| LLM | **Azure OpenAI** | GPT-4o + embeddings |
+| RAG | **Azure AI Search** | Índice vectorial de políticas |
+| DB | **Cosmos DB for MongoDB** | Audit trail + HITL + evaluaciones |
+| Secretos | **Key Vault** | Keys OpenAI, Mongo, Search |
+| Logs | **Application Insights** | Trazas y métricas |
+| Registry | **ACR** | Imagen Docker backend |
+| IaC | **Bicep** en `infra/` | Todo como código |
+
+## Topología
+
+```
+Static Web Apps (React) ──▶ Container Apps (FastAPI)
+                                  ├── Azure OpenAI
+                                  ├── AI Search (RAG)
+                                  ├── Cosmos DB (MongoDB API)
+                                  └── Key Vault
+                         Application Insights ◀── logs
+```
+
+## Estructura `infra/modules/`
+
+`container-app`, `static-web-app`, `cosmos-mongodb`, `key-vault`, `ai-search`, `app-insights`, `container-registry`
+
+## Variables Container Apps
+
+```
+MONGODB_URI                   # secret ref — Cosmos DB connection string
+AZURE_OPENAI_*                # secret refs
+AZURE_SEARCH_*                # secret refs
+APPLICATIONINSIGHTS_CONNECTION_STRING
+CORS_ORIGINS
+```
+
+## Local vs Azure
+
+| Componente | Local | Azure |
+|------------|-------|-------|
+| DB | MongoDB Docker :27017 | Cosmos DB MongoDB API |
+| RAG | Chroma | AI Search |
+| LLM | Azure OpenAI | Azure OpenAI |
+
+## Justificación README
+
+Cosmos DB MongoDB: documentos anidados para audit trail; servicio gestionado Azure; compatible con Motor/PyMongo local.

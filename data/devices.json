@@ -1,0 +1,22 @@
+[
+  {
+    "device_id": "D-01",
+    "label": "Chrome on MacBook",
+    "type": "web"
+  },
+  {
+    "device_id": "D-02",
+    "label": "Mobile app (Android)",
+    "type": "mobile"
+  },
+  {
+    "device_id": "D-03",
+    "label": "Mobile app (iOS)",
+    "type": "mobile"
+  },
+  {
+    "device_id": "D-99",
+    "label": "Unknown browser (first use)",
+    "type": "web"
+  }
+]

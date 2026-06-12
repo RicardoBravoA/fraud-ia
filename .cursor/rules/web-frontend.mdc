@@ -1,0 +1,91 @@
+---
+description: Frontend React — arquitectura feature-based, hooks y capas UI
+globs: web/**/*.{tsx,ts,jsx,js,css},frontend/**/*.{tsx,ts,jsx,js,css}
+alwaysApply: false
+---
+
+# Web — React (Feature-based + Hooks)
+
+Patrón obligatorio. Principios globales: `engineering-standards.mdc`.
+
+## Capas (flujo unidireccional)
+
+```
+Page  →  Hook (TanStack Query)  →  API client  →  Backend REST
+  ↓
+Components (UI pura, props in / events out)
+```
+
+| Capa | Carpeta | Responsabilidad |
+|------|---------|-----------------|
+| **Page** | `pages/` | Layout, compone componentes, sin fetch directo |
+| **Feature** | `features/` | Agrupa page + hooks + components por dominio (opcional) |
+| **Hook** | `hooks/` | Fetch, cache, loading/error — `useEvaluation`, `useHitlQueue` |
+| **API** | `api/` | **Único** punto HTTP tipado |
+| **Component** | `components/` | UI reutilizable; props tipadas, sin lógica de negocio |
+| **Types** | `types/` | Espejo de DTOs backend (`EvaluationResult`) |
+| **Lib** | `lib/` | formatters, constants — funciones puras |
+
+## Estructura
+
+```
+web/src/
+├── pages/                # Dashboard, Transactions, Evaluate, HITL, Audit
+├── features/             # evaluations/, hitl/, audit/ (opcional)
+├── components/           # DecisionBadge, AgentTimeline, DataTable
+├── hooks/                # useEvaluation, useTransactions, useHitlQueue
+├── api/
+│   └── client.ts         # getEvaluation(), resolveHitl(), etc.
+├── types/
+│   └── evaluation.ts
+├── lib/                  # formatCurrency, formatDate, decisionColors
+└── App.tsx
+```
+
+## Reglas por capa
+
+- **Pages**: usan hooks; no `fetch()` inline ni lógica de fraude
+- **Hooks**: TanStack Query; exponen `{ data, isLoading, error, mutate }`
+- **API client**: base URL desde `VITE_API_URL`; tipos de retorno explícitos
+- **Components**: presentacionales; badges, tablas, timelines sin side effects
+- **Sin Redux** — estado servidor en TanStack Query; UI local en `useState`
+- **Comments**: English only (`//`, JSDoc)
+- **UI language**: **English only** — labels, headings, buttons, empty/error states, placeholders (see `engineering-standards.mdc`)
+
+## Páginas obligatorias
+
+Dashboard | Transacciones | Evaluación | Cola HITL | Audit trail
+
+## Ejemplo correcto
+
+```tsx
+// page — solo compone
+export function EvaluatePage() {
+  const { id } = useParams();
+  const { data, isLoading, error } = useEvaluation(id!);
+  if (isLoading) return <Loading />;
+  if (error) return <ErrorState error={error} />;
+  return <EvaluationDetail evaluation={data} />;
+}
+
+// hook — lógica de datos
+export function useEvaluation(txId: string) {
+  return useQuery({ queryKey: ["evaluation", txId], queryFn: () => api.getEvaluation(txId) });
+}
+```
+
+## Stack
+
+React 18, Vite, TypeScript, Tailwind, TanStack Query, React Router.
+
+## UX
+
+Badges por decisión, timeline agentes, barra confidence, mobile-first (tablas → cards).
+
+## Tests
+
+`web-testing.mdc` — MSW mock API; testear 4 estados UI por page.
+
+## Prohibido
+
+Lógica de agentes, LLM o reglas de fraude en el frontend.

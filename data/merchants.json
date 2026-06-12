@@ -1,0 +1,28 @@
+[
+  {
+    "merchant_id": "M-001",
+    "name": "Retail Plaza Lima",
+    "category": "retail",
+    "risk_level": "low"
+  },
+  {
+    "merchant_id": "M-002",
+    "name": "TechStore PE",
+    "category": "electronics",
+    "risk_level": "low"
+  },
+  {
+    "merchant_id": "M-003",
+    "name": "Luxury Imports",
+    "category": "luxury",
+    "risk_level": "high",
+    "risk_reason": "Elevated chargeback history"
+  },
+  {
+    "merchant_id": "M-004",
+    "name": "Global Shop US",
+    "category": "international",
+    "risk_level": "medium",
+    "risk_reason": "Unverified international merchant"
+  }
+]

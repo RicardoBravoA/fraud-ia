@@ -1,0 +1,18 @@
+---
+description: Estándares KMP/Compose — EN ESPERA, no implementar aún
+globs: composeApp/**/*.kt,mobile/**/*.kt
+alwaysApply: false
+---
+
+# Mobile — EN ESPERA ⏸
+
+No implementar mobile hasta nueva indicación.
+
+## Alcance futuro (referencia)
+
+App Android/iOS con Compose Multiplatform consumiendo la API FastAPI.
+Pantallas planeadas: alertas, cola HITL, detalle evaluación, audit trail.
+
+## Por ahora
+
+Prioridad: **backend Python + frontend React web**.

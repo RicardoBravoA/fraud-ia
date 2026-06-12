@@ -1,0 +1,39 @@
+---
+description: Pruebas unitarias backend Python — pytest, mocks, cobertura mínima
+globs: backend/**/*.py,backend/tests/**
+alwaysApply: false
+---
+
+# Testing Backend (Python)
+
+Incluye **`app/`** y **`scripts/`**. Índice global: `testing-strategy.mdc`.
+
+## Stack
+
+pytest + pytest-asyncio + pytest-cov (**≥80%**), httpx AsyncClient, mongomock, pytest-mock.
+
+## Estructura
+
+```
+backend/tests/
+├── conftest.py
+├── unit/          # services, agents, rag, repositories, models
+├── integration/   # api routes, orchestrator
+├── scripts/       # seed_data, index_policies, batch_evaluations
+└── smoke/         # deployed API (skip sin SMOKE_TEST_URL)
+```
+
+## Reglas
+
+1. Toda función pública en `app/` → test unitario
+2. Todo endpoint → test integration
+3. Todo script → test en `tests/scripts/` (mock DB + vector store)
+4. Mock siempre: LLM, AI Search, Tavily
+5. Nombrar: `test_<comportamiento>_when_<condición>`
+
+## Comandos
+
+```bash
+cd backend && pytest --cov=app --cov=scripts --cov-fail-under=80
+ruff check . && mypy app
+```

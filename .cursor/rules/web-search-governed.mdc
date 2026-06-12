@@ -1,0 +1,46 @@
+---
+description: Búsqueda web gobernada para External Threat Intel Agent
+globs: backend/**/web_search/**,backend/**/infrastructure/web_search/**
+alwaysApply: false
+---
+
+# Web Search Gobernada
+
+PDF: External Threat Intel Agent busca amenazas recientes con búsqueda web **gobernada**.
+
+## Implementación
+
+- API: Tavily, Bing Web Search o SerpAPI (configurable)
+- **Mock** en dev: `WEB_SEARCH_MOCK=true` — ver `.env.example`
+
+## Gobernanza (obligatorio)
+
+| Control | Valor |
+|---------|-------|
+| Dominios permitidos | `WEB_SEARCH_ALLOWED_DOMAINS` en config |
+| Timeout | 5 segundos |
+| Max resultados | 3 por query |
+| Rate limit | 10 req/min (in-memory o Redis opcional) |
+| Fallback | Si falla → continuar pipeline sin `citations_external` |
+
+## Queries template
+
+```
+fraud alert {merchant_id}
+payment fraud {country} {year}
+{merchant_id} security breach
+```
+
+## Audit trail
+
+Registrar en `audit_events`: `query`, `domains_hit`, `urls_returned`, `retrieved_at`, `mock` flag.
+
+## citations_external
+
+```json
+{ "url": "https://...", "summary": "Alerta de fraude reciente en el merchant" }
+```
+
+## Tests
+
+Mock siempre en unit tests — nunca llamadas web reales en CI.

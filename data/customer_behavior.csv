@@ -1,0 +1,4 @@
+customer_id,usual_amount_avg,usual_hours,usual_countries,usual_devices
+CU-001,500.00,08-20,PE,D-01
+CU-002,1200.00,09-22,PE,D-02
+CU-003,800.00,10-18,PE,D-03

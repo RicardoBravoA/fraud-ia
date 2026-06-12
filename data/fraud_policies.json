@@ -1,0 +1,26 @@
+[
+  {
+    "policy_id": "FP-01",
+    "title": "High amount and unusual hours",
+    "rule": "Monto > 3x promedio habitual y horario fuera de rango → CHALLENGE",
+    "version": "2025.1"
+  },
+  {
+    "policy_id": "FP-02",
+    "title": "International + new device",
+    "rule": "Transacción internacional y dispositivo nuevo → ESCALATE_TO_HUMAN",
+    "version": "2025.1"
+  },
+  {
+    "policy_id": "FP-03",
+    "title": "Extreme amount spike",
+    "rule": "Monto > 10x promedio habitual → BLOCK",
+    "version": "2025.1"
+  },
+  {
+    "policy_id": "FP-04",
+    "title": "High-risk merchant amount",
+    "rule": "Merchant en lista de alto riesgo con monto elevado → BLOCK",
+    "version": "2025.1"
+  }
+]

@@ -1,0 +1,66 @@
+---
+description: Arquitectura limpia, buenas prácticas y código escalable en todo el proyecto
+alwaysApply: true
+---
+
+# Estándares de ingeniería (global)
+
+Aplica a **backend, frontend, infra, scripts y tests**.
+
+## Arquitectura
+
+- **Capas claras** — separar presentación, aplicación, dominio e infraestructura
+- **Backend**: `routes → services → repositories/agents` — sin lógica de negocio en routes
+- **Frontend**: `pages → components → hooks → api` — sin fetch directo en componentes pesados
+- **Dependencias hacia adentro** — dominio no importa FastAPI, Motor ni React
+- **Un módulo, una responsabilidad** — agentes, repos y servicios pequeños y cohesivos
+
+## Código escalable
+
+- Diseñar para **extender** (nuevo agente, nueva política, nuevo endpoint) sin reescribir
+- **Interfaces/contratos** explícitos: Pydantic schemas, tipos TS, DTOs compartidos vía JSON
+- **Inyección de dependencias** — config, DB, LLM client inyectables (testeables)
+- **Async** donde hay I/O; evitar bloqueo del event loop
+- **Idempotencia** en seed, indexación y operaciones HITL cuando aplique
+
+## Buenas prácticas
+
+- **SOLID** — especialmente SRP (una clase/función, un motivo de cambio) y DIP (depender de abstracciones)
+- **DRY con criterio** — no duplicar lógica; sí permitir duplicación trivial antes que abstracción prematura
+- **Nombres expresivos** — `evaluate_transaction`, no `process`; reflejar dominio de fraude
+- **Type hints / TypeScript estricto** — tipado en todo código nuevo
+- **Errores explícitos** — excepciones de dominio, HTTP codes semánticos, nunca `except: pass`
+- **Logging estructurado** — contexto (`transaction_id`, `agent_name`) en cada log relevante
+- **Config externalizada** — `.env`/Key Vault; cero magic strings de secrets en código
+
+## Language
+
+- **Comments in English** — `#`, `//`, `/* */`, docstrings and JSDoc in all code (backend, web, infra, scripts, tests)
+- **Code identifiers in English** — variables, functions, classes, files, endpoints, enums
+- **Web UI in English** — all user-facing strings in `web/`: nav, headings, buttons, forms, empty/error/loading states, formatters (`en-US` locale)
+- **Backend domain content** may stay in Spanish where required by the challenge (e.g. `explanation_customer`, fraud signal names from API) — the web displays them as-is under English section labels
+- Do not mix languages in the same comment; keep comments brief and only where logic is non-obvious
+
+```python
+# ✅ Good — aggregate signals before debate phase
+# ❌ Mal — agregar señales antes del debate
+```
+
+```tsx
+// ✅ Good — map decision enum to badge color variant
+// ❌ Mal — mapear decisión a color del badge
+```
+
+## Qué evitar
+
+- God classes, funciones >80 líneas, lógica de agentes en el frontend
+- Acoplar LLM prompts a routes o componentes UI
+- Over-engineering (frameworks extra, capas vacías, helpers de una línea)
+- Código sin tests — ver `testing-strategy.mdc`
+
+## Calidad antes de merge
+
+- [ ] Respeta capas y separación de responsabilidades
+- [ ] Comentarios y docstrings en **inglés**
+- [ ] Tests unitarios del cambio incluidos
+- [ ] Sin deuda introducida que el README no documente
